@@ -7,23 +7,26 @@ import Signup from "./pages/Signup";
 import Login from "./pages/Login";
 import MyPage from "./pages/MyPage";
 import Layout from "./components/Layout";
+import AuthProvider from "./providers/AuthProvider";
 
 
 
 export default function App() {
   return (
-    <BrowserRouter>
-      <Routes>
-        <Route element={<Layout />}>
-          <Route path="/" element={<Home />}/> 
-          <Route path="/feeds/:id" element={<Detail />}/> 
-          <Route path="/feeds/create" element={<CreatePage />} />
-          <Route path="/feeds/update/:id" element={<UpdatePage />} />
-          <Route path="/mypage" element={<MyPage />} />      
-        </Route>
-        <Route path="/signup" element={<Signup />} />
-        <Route path="/login" element={<Login />} />
-      </Routes>
-    </BrowserRouter>
+    <AuthProvider>
+      <BrowserRouter>
+        <Routes>
+          <Route element={<Layout />}>
+            <Route path="/" element={<Home />} />
+            <Route path="/feeds/:id" element={<Detail />} />
+            <Route path="/feeds/create" element={<CreatePage />} />
+            <Route path="/feeds/update/:id" element={<UpdatePage />} />
+            <Route path="/mypage" element={<MyPage />} />
+          </Route>
+          <Route path="/signup" element={<Signup />} />
+          <Route path="/login" element={<Login />} />
+        </Routes>
+      </BrowserRouter>
+    </AuthProvider>
   )
 } 

@@ -3,6 +3,7 @@ import { Link, useNavigate } from "react-router-dom";
 import supabase from "../utils/supabase";
 
 export default function Login() {
+
 	const navigate = useNavigate();
 	const [email, setEmail] = useState("");
 	const [password, setPassword] = useState("");
@@ -41,10 +42,11 @@ export default function Login() {
 		}
 
 		// 1. supabase 회원가입 
-		const { data, error } = await supabase.auth.signInWithPassword({
+		const { error } = await supabase.auth.signInWithPassword({
 			email,
 			password,
-		})
+		});
+
 
 		if (error) {
 			alert(`로그인에 실패했습니다. ${error.message}`)

@@ -1,11 +1,9 @@
 import { Link, Outlet } from "react-router-dom";
 import supabase from "../utils/supabase";
+import useAuthStore from "../stores/useAuthStore";
 
 export default function Layout() {
-	// const user = {
-	// 	nickname: "홍길동",
-	// };
-	const user = null;
+	const { user } = useAuthStore();
 
 	const handleLogout = async () => {
 		await supabase.auth.signOut();
