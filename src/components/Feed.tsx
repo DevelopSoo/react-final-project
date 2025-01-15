@@ -27,7 +27,7 @@ function Feed({ feed }: {
 	})
 
 	return (
-		<Link to="/feeds/1" className="flex justify-between bg-white shadow-md p-6 rounded-lg">
+		<Link to={`/feeds/${feed.id}`} className="flex justify-between bg-white shadow-md p-6 rounded-lg">
 			<div>
 				<button className="p-3 bg-gray-100 rounded-lg text-sm flex flex-col items-center gap-1 text-blue-950">
 					<FaAngleUp className="text-xs text-center font-bold" />
