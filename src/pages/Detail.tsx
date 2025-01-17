@@ -2,14 +2,16 @@ import { FaAngleUp, FaCommentDots } from "react-icons/fa6";
 import { Link, useParams } from "react-router-dom";
 import Comment from "../components/Comment";
 import CommentForm from "../components/CommentForm";
-import { useQuery } from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { getFeedById } from "../api/feedApi";
-import { getUpvotesCount } from "../api/upvoteApi";
+import { getUpvotesByFeedId, toggleUpvote } from "../api/upvoteApi";
 import { getCommentsByFeedId } from "../api/commentApi";
+import useAuthStore from "../stores/useAuthStore";
 
 export default function Detail() {
 	// 1. 주소에 있는 id를 가져와야 한다.
 	const { id } = useParams();
+	const { user } = useAuthStore();
 
 	// 2. id를 이용하여 API를 요청한다.
 	const { data, isLoading, error } = useQuery({
@@ -35,16 +37,49 @@ export default function Detail() {
 		}
 	});
 
-	const { data: upvotesCount, isLoading: isUpvotesLoading } = useQuery({
+	// 1. 좋아요 데이터를 가져온다,
+	const { data: upvotes, isLoading: isUpvotesLoading } = useQuery({
 		queryKey: ["upvotes", id],
 		queryFn: () => {
 			if (!id) {
 				throw new Error("id가 없습니다.")
 			}
-			return getUpvotesCount(id)
+			return getUpvotesByFeedId(id)
 		}
-	})
+	});
 
+	// 2. 내가 좋아요 했는지 확인한다.
+	const isUpvotedByMe = upvotes?.some((upvote) => upvote.user_id === user?.id)
+
+	const queryClient = useQueryClient();
+	// 3. 좋아요 추가 혹은 삭제를 한다.
+	const toggleMutation = useMutation({
+		mutationFn: async () => {
+			if (!user) {
+				alert("로그인 후 이용해주세요.")
+				return
+			}
+
+			if (data.user_id === user.id) {
+				alert("작성자는 좋아요를 누를 수 없습니다.")
+				return
+			}
+			// 내가 좋아요를 누른 적이 있는지 확인 
+			// 좋아요 데이터를 다 가져온 후 -> 내가 한 게 있는지 체크 
+			if (!id || isUpvotedByMe === undefined) {
+				return alert("좋아요 데이터를 불러오는 중 오류가 발생했습니다.")
+			}
+			// 내가 현재 좋아요를 한 상태면 -> 좋아요 취소
+			// 내가 현재 좋아요를 하지 않은 상태면 -> 좋아요 추가
+			await toggleUpvote({ feedId: id, userId: user.id, isUpvoted: isUpvotedByMe });
+		},
+		onSuccess: () => {
+			queryClient.invalidateQueries({ queryKey: ["upvotes", id] })
+		},
+		onError: () => {
+			alert("좋아요 추가 혹은 삭제 실패")
+		}
+	});
 
 	if (isLoading) return <div>로딩 중 ...</div>
 	if (error) return <div>에러 발생: {error.message}</div>
@@ -67,9 +102,15 @@ export default function Detail() {
 
 			{/* 글 내용 */}
 			<div className="flex items-center justify-between bg-white p-6 rounded-lg">
-				<button className="bg-gray-100 p-3 rounded-lg text-sm text-blue-950">
+				<button
+					onClick={() => toggleMutation.mutate()}
+					className="bg-gray-100 p-3 rounded-lg text-sm text-blue-950">
 					<FaAngleUp />
-					<div>{isUpvotesLoading ? <div className="animate-pulse w-4 h-4 bg-slate-200 rounded-full"></div> : upvotesCount}</div>
+					<div>{
+						isUpvotesLoading ?
+							<div className="animate-pulse w-4 h-4 bg-slate-200 rounded-full"></div>
+							: <span className={`font-bold ${isUpvotedByMe ? "text-red-500" : ""}`}>{upvotes?.length}</span>}
+					</div>
 				</button>
 
 				<div className="flex-1 px-10 min-w-0 flex flex-col gap-6">

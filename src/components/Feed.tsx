@@ -17,12 +17,12 @@ function Feed({ feed }: {
 	feed: FeedProps;
 }) {
 	const { data: commentsCount, isLoading: isCommentsLoading } = useQuery({
-		queryKey: ["comments", feed.id],
+		queryKey: ["comments", feed.id, "count"],
 		queryFn: () => getCommentsCount(feed.id)
 	});
 
 	const { data: upvotesCount, isLoading: isUpvotesLoading } = useQuery({
-		queryKey: ["upvotes", feed.id],
+		queryKey: ["upvotes", feed.id, "count"],
 		queryFn: () => getUpvotesCount(feed.id)
 	})
 
