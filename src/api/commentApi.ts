@@ -25,3 +25,20 @@ export const getCommentsByFeedId = async (feedId: string) => {
   if (error) throw new Error("댓글 조회 실패");
   return data;
 };
+
+export const addComment = async ({
+  feedId,
+  userId,
+  content,
+}: {
+  feedId: string;
+  userId: string;
+  content: string;
+}) => {
+  const { error } = await supabase.from("comments").insert({
+    content,
+    feed_id: feedId,
+    user_id: userId,
+  });
+  if (error) throw new Error(`댓글 추가 실패: ${error.message}`);
+};

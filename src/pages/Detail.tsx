@@ -143,7 +143,7 @@ export default function Detail() {
 			</div>
 
 			{/* 댓글 작성 폼  */}
-			<CommentForm />
+			<CommentForm feedId={id} />
 		</div>
 	)
 }
