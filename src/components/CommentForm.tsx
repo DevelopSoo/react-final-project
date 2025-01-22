@@ -35,6 +35,7 @@ export default function CommentForm({
 		},
 		onSuccess: () => {
 			queryClient.invalidateQueries({ queryKey: ["feeds", feedId, "comments"] })
+			setComment("");
 		},
 		onError: (error) => {
 			alert(error.message);
