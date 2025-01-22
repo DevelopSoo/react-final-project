@@ -1,5 +1,7 @@
 import { IoPersonCircleOutline } from "react-icons/io5";
 import useAuthStore from "../stores/useAuthStore";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { deleteComment } from "../api/commentApi";
 
 interface CommentProps {
 	id: string;
@@ -18,6 +20,22 @@ interface CommentProps {
 export default function Comment({ comment }: { comment: CommentProps }) {
 	const { user } = useAuthStore();
 
+	const queryClient = useQueryClient();
+
+	const deleteMutation = useMutation({
+		mutationFn: () => deleteComment(comment.id),
+		onSuccess: () => {
+			queryClient.invalidateQueries({
+				queryKey: ["feeds", comment.feed_id, "comments"]
+			});
+		}
+	});
+
+	const handleDelete = () => {
+		if (confirm("정말 삭제하시겠습니까?")) {
+			deleteMutation.mutate();
+		}
+	}
 	return (
 		<>
 			<div className="flex gap-2.5">
@@ -41,6 +59,7 @@ export default function Comment({ comment }: { comment: CommentProps }) {
 							수정
 						</button>
 						<button
+							onClick={handleDelete}
 							className="text-white bg-red-500 px-4 py-2 rounded-md"
 						>
 							삭제
