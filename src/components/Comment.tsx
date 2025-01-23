@@ -48,7 +48,7 @@ export default function Comment({ comment }: { comment: CommentProps }) {
 	});
 
 	const editMutation = useMutation({
-		mutationFn: async () => editComment({
+		mutationFn: () => editComment({
 			content: editContent,
 			commentId: comment.id,
 		}),
