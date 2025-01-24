@@ -21,3 +21,23 @@ export const getFeedById = async (id: string) => {
   }
   return data[0];
 };
+
+export const addFeed = async ({
+  title,
+  content,
+  userId,
+}: {
+  title: string;
+  content: string;
+  userId: string;
+}) => {
+  const { error } = await supabase.from("feeds").insert({
+    title,
+    content,
+    user_id: userId,
+  });
+
+  if (error) {
+    throw new Error(`feed 추가 중 에러가 발생했습니다. ${error.message}`);
+  }
+};
