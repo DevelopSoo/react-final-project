@@ -94,10 +94,14 @@ export default function Detail() {
 					<span className="text-gray-600">뒤로가기</span>
 				</Link>
 				{/* 수정, 삭제 버튼 */}
-				<div className="flex gap-2">
-					<Link to="/feeds/update/1" className="bg-yellow-500 text-white rounded-md px-4 py-2">수정</Link>
-					<button className="bg-red-500 text-white rounded-md px-4 py-2">삭제</button>
-				</div>
+				{
+					user?.id === data?.user_id && (
+						<div className="flex gap-2">
+							<Link to={`/feeds/update/${data.id}`} className="bg-yellow-500 text-white rounded-md px-4 py-2">수정</Link>
+							<button className="bg-red-500 text-white rounded-md px-4 py-2">삭제</button>
+						</div>
+					)
+				}
 			</div>
 
 			{/* 글 내용 */}

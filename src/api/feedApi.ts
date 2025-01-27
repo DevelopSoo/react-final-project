@@ -41,3 +41,24 @@ export const addFeed = async ({
     throw new Error(`feed 추가 중 에러가 발생했습니다. ${error.message}`);
   }
 };
+
+export const editFeed = async ({
+  id,
+  title,
+  content,
+}: {
+  id: string;
+  title: string;
+  content: string;
+}) => {
+  const { error } = await supabase
+    .from("feeds")
+    .update({
+      title,
+      content,
+    })
+    .eq("id", id);
+  if (error) {
+    throw new Error(`feed 수정 중 에러가 발생했습니다. ${error.message}`);
+  }
+};
