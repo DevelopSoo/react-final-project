@@ -62,3 +62,20 @@ export const editFeed = async ({
     throw new Error(`feed 수정 중 에러가 발생했습니다. ${error.message}`);
   }
 };
+
+export const deleteFeed = async ({
+  id,
+  userId,
+}: {
+  id: string;
+  userId: string;
+}) => {
+  const { error } = await supabase
+    .from("feeds")
+    .delete()
+    .eq("id", id)
+    .eq("user_id", userId);
+  if (error) {
+    throw new Error(`feed 삭제 중 에러가 발생했습니다. ${error.message}`);
+  }
+};

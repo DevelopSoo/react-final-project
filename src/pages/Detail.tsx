@@ -1,9 +1,9 @@
 import { FaAngleUp, FaCommentDots } from "react-icons/fa6";
-import { Link, useParams } from "react-router-dom";
+import { Link, useNavigate, useParams } from "react-router-dom";
 import Comment from "../components/Comment";
 import CommentForm from "../components/CommentForm";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { getFeedById } from "../api/feedApi";
+import { deleteFeed, getFeedById } from "../api/feedApi";
 import { getUpvotesByFeedId, toggleUpvote } from "../api/upvoteApi";
 import { getCommentsByFeedId } from "../api/commentApi";
 import useAuthStore from "../stores/useAuthStore";
@@ -12,6 +12,7 @@ export default function Detail() {
 	// 1. 주소에 있는 id를 가져와야 한다.
 	const { id } = useParams();
 	const { user } = useAuthStore();
+	const navigate = useNavigate();
 
 	// 2. id를 이용하여 API를 요청한다.
 	const { data, isLoading, error } = useQuery({
@@ -81,6 +82,38 @@ export default function Detail() {
 		}
 	});
 
+	const deleteMutation = useMutation({
+		mutationFn: async () => {
+			// 게시물의 아이디가 일치하는 걸 삭제한다.
+			// & 유저 아이디가 일치하는 걸 삭제한다. 
+			// 타입 체크를 미리 한다.
+			if (!id) {
+				throw new Error("id가 없습니다.")
+			}
+			if (!user) {
+				throw new Error("유저 정보가 없습니다.")
+			}
+
+			await deleteFeed({
+				id,
+				userId: user.id
+			})
+		},
+		onSuccess: () => {
+			navigate("/")
+		},
+		onError: (error) => {
+			alert(`삭제 실패: ${error.message}`)
+		}
+	});
+
+	const handleDelete = () => {
+		if (!window.confirm("정말로 삭제하시겠습니까?")) {
+			return;
+		}
+		deleteMutation.mutate();
+	}
+
 	if (isLoading) return <div>로딩 중 ...</div>
 	if (error) return <div>에러 발생: {error.message}</div>
 
@@ -98,7 +131,9 @@ export default function Detail() {
 					user?.id === data?.user_id && (
 						<div className="flex gap-2">
 							<Link to={`/feeds/update/${data.id}`} className="bg-yellow-500 text-white rounded-md px-4 py-2">수정</Link>
-							<button className="bg-red-500 text-white rounded-md px-4 py-2">삭제</button>
+							<button
+								onClick={handleDelete}
+								className="bg-red-500 text-white rounded-md px-4 py-2">삭제</button>
 						</div>
 					)
 				}
