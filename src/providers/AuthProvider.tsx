@@ -12,6 +12,7 @@ const AuthProvider = ({ children }: { children: React.ReactNode }) => {
           id: session.user.id,
           email: session.user.email,
           nickname: session.user.user_metadata.nickname,
+          img_url: session.user.user_metadata.img_url,
         });
       } else {
         setUser(null);
