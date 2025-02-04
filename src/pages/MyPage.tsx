@@ -1,9 +1,24 @@
-import { useState } from "react"
+import { useEffect, useState } from "react"
 import useAuthStore from "../stores/useAuthStore";
+import supabase from "../utils/supabase";
 
 export default function MyPage() {
 	const { user } = useAuthStore();
 	const [previewImage, setPreviewImage] = useState<string | null>(null);
+	const [profileFile, setProfileFile] = useState<File | null>(null)
+	const [nickname, setNickname] = useState("");
+	const [isUploading, setIsUploading] = useState(false);
+
+	const handleNicknameChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+		setNickname(e.target.value);
+	}
+
+	useEffect(() => {
+		if (user) {
+			setNickname(user.nickname);
+			setPreviewImage(user.img_url)
+		}
+	}, [user]);
 
 	const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
 		const file = e.target.files?.[0];
@@ -14,7 +29,45 @@ export default function MyPage() {
 				setPreviewImage(e.target?.result as string);
 			}
 			reader.readAsDataURL(file);
+			// 실제 이미지 파일을 state에 임시로 저장 
+			setProfileFile(file);
 		}
+	}
+
+	// 저장하기 버튼 -> storage에 업로드 
+	const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+		e.preventDefault();
+
+		setIsUploading(true);
+		const updateData = {
+			nickname,
+			img_url: previewImage,
+		}
+
+		if (profileFile) {
+			// 이미지 이름을 고정하면 누가 누구 것인지 알 수 없다. -> 추후에 가져올 때 문제가 된다.
+			// 확장자가 다를 때 깨질 수도 있다. 
+			const fileExt = profileFile.name.split(".").pop();
+			// 경로 -> 유저 별로 다르게 만들 예정 
+			const filePath = `${user?.id}/profile_${Date.now()}.${fileExt}`
+			const { error } = await supabase.storage.from("profile_img").upload(filePath, profileFile)
+			if (error) {
+				alert(`이미지 업로드에 실패했습니다. ${error.message}`)
+			}
+
+			// 가져오는 방법
+			const { data: { publicUrl } } = supabase.storage.from("profile_img").getPublicUrl(filePath)
+			// auth에도 넣어준다. 
+			updateData.img_url = publicUrl;
+		}
+
+		await supabase.auth.updateUser({
+			data: updateData,
+		})
+
+		// users 테이블에 넣는다. 
+		await supabase.from("users").update(updateData).eq("id", user?.id);
+		setIsUploading(false);
 	}
 
 	return (
@@ -50,7 +103,7 @@ export default function MyPage() {
 				</div>
 
 				{/* 사용자 정보 폼 */}
-				<form className="space-y-4">
+				<form onSubmit={handleSubmit} className="space-y-4">
 					<div>
 						<label htmlFor="email" className="block text-sm font-medium text-gray-700">
 							이메일
@@ -71,8 +124,8 @@ export default function MyPage() {
 						<input
 							type="text"
 							id="nickname"
-							value={user?.nickname}
-							// onChange={handleChange}
+							value={nickname}
+							onChange={handleNicknameChange}
 							placeholder="닉네임을 입력하세요"
 							className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500"
 						/>
@@ -81,12 +134,12 @@ export default function MyPage() {
 					<div className="flex justify-end">
 						<button
 							type="submit"
-							// disabled={isUploading}
+							disabled={isUploading}
 							className={`px-4 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500
+								${isUploading ? "opacity-50 cursor-not-allowed" : ""}
 								`}
 						>
-							{/* {isUploading ? "업로드 중..." : "저장하기"} */}
-							저장하기
+							{isUploading ? "업로드 중..." : "저장하기"}
 						</button>
 					</div>
 				</form>
