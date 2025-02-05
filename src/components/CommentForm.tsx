@@ -62,7 +62,10 @@ export default function CommentForm({
 				/>
 				<button
 					type="submit"
-					className="self-end px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
+					// 적용 전 
+					// className="self-end px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
+					// 적용 후 
+					className="btn-primary self-end hover:bg-blue-700"
 				>
 					작성
 				</button>

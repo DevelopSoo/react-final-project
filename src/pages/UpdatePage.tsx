@@ -62,7 +62,10 @@ export default function UpdatePage() {
 			handleContentChange={handleContentChange}
 			handleSubmit={handleSubmit}
 		>
-			<button className="bg-yellow-500 text-white px-4 py-2 rounded-lg">수정</button>
+			{/* 적용 전 */}
+			{/* <button className="bg-yellow-500 text-white px-4 py-2 rounded-lg">수정</button> */}
+			{/* 적용 후 */}
+			<button className="btn-warning">수정</button>
 		</FeedForm>
 	)
 }

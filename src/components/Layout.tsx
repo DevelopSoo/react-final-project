@@ -3,10 +3,22 @@ import supabase from "../utils/supabase";
 import useAuthStore from "../stores/useAuthStore";
 
 export default function Layout() {
-	const { user } = useAuthStore();
+	// TODO: useAuthStore 사용 시 구독할 데이터 구체화하기 
+	// 전
+	// const { user } = useAuthStore();
+	// 후
+	const user = useAuthStore((state) => state.user);
 
+	// TODO: 에러 처리 
 	const handleLogout = async () => {
-		await supabase.auth.signOut();
+		// 전
+		// await supabase.auth.signOut();
+
+		// 후
+		const { error } = await supabase.auth.signOut();
+		if (error) {
+			alert(`로그아웃에 실패했습니다. ${error.message}`);
+		}
 	}
 	return (
 		<>
@@ -21,13 +33,16 @@ export default function Layout() {
 								<Link to="/mypage" className="hover:underline">{user.nickname}</Link>
 								<button
 									onClick={handleLogout}
-									className="text-sm text-gray-900 bg-white border border-gray-300 rounded-lg px-5 py-2.5 hover:bg-gray-100 font-medium">로그아웃</button>
+									// TODO: 반복되는 css 변경 -> index.css에 적용 
+									className="btn-outline">로그아웃</button>
 							</>
 						) : (
 							<>
 								<Link to="/login"
-									className="text-sm text-gray-900 bg-white border border-gray-300 rounded-lg px-5 py-2.5 hover:bg-gray-100 font-medium"  >로그인</Link>
-								<Link to="/signup" className="text-sm text-gray-900 bg-white border border-gray-300 rounded-lg px-5 py-2.5 hover:bg-gray-100 font-medium">회원가입</Link>
+									// TODO: 반복되는 css 변경 -> index.css에 적용 
+									className="btn-outline">로그인</Link>
+								{/* TODO: 반복되는 css 변경 -> index.css에 적용  */}
+								<Link to="/signup" className="btn-outline">회원가입</Link>
 							</>
 						)
 					}

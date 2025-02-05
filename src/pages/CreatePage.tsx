@@ -22,8 +22,11 @@ export default function CreatePage() {
 	const addFeedMutation = useMutation({
 		mutationFn: async () => {
 			if (!user) {
-				alert("로그인 후 이용해주세요.");
-				return;
+				// 적용 전 
+				// alert("로그인 후 이용해주세요.");
+				// 적용 후 
+				throw new Error("로그인 후 이용해주세요.");
+				// return;
 			}
 			await addFeed({
 				title,
@@ -52,7 +55,10 @@ export default function CreatePage() {
 			handleTitleChange={handleTitleChange}
 			handleContentChange={handleContentChange}
 			handleSubmit={handleSubmit} >
-			<button className="bg-blue-600 text-white px-4 py-2 rounded-lg">추가</button>
+			{/* 적용 전  */}
+			{/* <button className="bg-blue-600 text-white px-4 py-2 rounded-lg">추가</button> */}
+			{/* 적용 후  */}
+			<button className="btn-primary">추가</button>
 		</FeedForm>
 	)
 }
