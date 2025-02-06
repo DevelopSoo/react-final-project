@@ -58,11 +58,6 @@ export default function Signup() {
 		const { data, error } = await supabase.auth.signUp({
 			email,
 			password,
-			options: {
-				data: {
-					nickname,
-				}
-			}
 		})
 
 		if (error) {
@@ -83,7 +78,7 @@ export default function Signup() {
 		}
 
 		alert("회원가입에 성공했습니다~!");
-		navigate('/');
+		navigate('/login');
 	}
 
 	return (

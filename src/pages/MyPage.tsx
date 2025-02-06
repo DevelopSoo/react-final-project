@@ -61,14 +61,6 @@ export default function MyPage() {
 				updateData.img_url = publicUrl;
 			}
 
-			const { error: authError } = await supabase.auth.updateUser({
-				data: updateData,
-			})
-
-			if (authError) {
-				throw new Error(`유저 정보 업데이트에 실패했습니다. ${authError.message}`)
-			}
-
 			// users 테이블에 넣는다. 
 			const { error: userError } = await supabase.from("users").update(updateData).eq("id", user?.id);
 			if (userError) {
