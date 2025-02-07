@@ -3,7 +3,7 @@ import useAuthStore from "../stores/useAuthStore";
 import supabase from "../utils/supabase";
 
 export default function MyPage() {
-	const { user } = useAuthStore();
+	const { user, setUser } = useAuthStore();
 	const [previewImage, setPreviewImage] = useState<string | null>(null);
 	const [profileFile, setProfileFile] = useState<File | null>(null)
 	const [nickname, setNickname] = useState("");
@@ -37,37 +37,52 @@ export default function MyPage() {
 	// 저장하기 버튼 -> storage에 업로드 
 	const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
 		e.preventDefault();
-
-		setIsUploading(true);
-		const updateData = {
-			nickname,
-			img_url: previewImage,
-		}
-
-		if (profileFile) {
-			// 이미지 이름을 고정하면 누가 누구 것인지 알 수 없다. -> 추후에 가져올 때 문제가 된다.
-			// 확장자가 다를 때 깨질 수도 있다. 
-			const fileExt = profileFile.name.split(".").pop();
-			// 경로 -> 유저 별로 다르게 만들 예정 
-			const filePath = `${user?.id}/profile_${Date.now()}.${fileExt}`
-			const { error } = await supabase.storage.from("profile_img").upload(filePath, profileFile)
-			if (error) {
-				alert(`이미지 업로드에 실패했습니다. ${error.message}`)
+		try {
+			if (!user) {
+				throw new Error("유저 정보가 없습니다.")
 			}
 
-			// 가져오는 방법
-			const { data: { publicUrl } } = supabase.storage.from("profile_img").getPublicUrl(filePath)
-			// auth에도 넣어준다. 
-			updateData.img_url = publicUrl;
+			setIsUploading(true);
+			const updateData = {
+				nickname,
+				img_url: previewImage,
+			}
+
+			if (profileFile) {
+				// 이미지 이름을 고정하면 누가 누구 것인지 알 수 없다. -> 추후에 가져올 때 문제가 된다.
+				// 확장자가 다를 때 깨질 수도 있다. 
+				const fileExt = profileFile.name.split(".").pop();
+				// 경로 -> 유저 별로 다르게 만들 예정 
+				const filePath = `${user?.id}/profile_${Date.now()}.${fileExt}`
+				const { error } = await supabase.storage.from("profile_img").upload(filePath, profileFile)
+				if (error) {
+					throw new Error(`이미지 업로드에 실패했습니다. ${error.message}`)
+				}
+
+				// 가져오는 방법
+				const { data: { publicUrl } } = supabase.storage.from("profile_img").getPublicUrl(filePath)
+				// auth에도 넣어준다. 
+				updateData.img_url = publicUrl;
+			}
+
+			// users 테이블에 넣는다. 
+			const { data: userData, error: userError } = await supabase.from("users").update(updateData).eq("id", user?.id).select();
+
+			if (userError) {
+				throw new Error(`유저 정보 업데이트에 실패했습니다. ${userError.message}`)
+			}
+			// user 정보 저장한 곳 === zustand -> 변경 X
+			setUser({
+				...user,
+				nickname: userData[0].nickname,
+				img_url: userData[0].img_url,
+			})
+
+		} catch (error) {
+			alert(`저장에 실패했습니다. ${error}`)
+		} finally {
+			setIsUploading(false);
 		}
-
-		await supabase.auth.updateUser({
-			data: updateData,
-		})
-
-		// users 테이블에 넣는다. 
-		await supabase.from("users").update(updateData).eq("id", user?.id);
-		setIsUploading(false);
 	}
 
 	return (

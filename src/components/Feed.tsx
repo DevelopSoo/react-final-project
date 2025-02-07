@@ -17,12 +17,21 @@ function Feed({ feed }: {
 	feed: FeedProps;
 }) {
 	const { data: commentsCount, isLoading: isCommentsLoading } = useQuery({
-		queryKey: ["comments", feed.id, "count"],
+		// 쿼리키 계층화 적용 전 
+		// 1. 의미가 이상하다 -> 댓글의 게시물 아이디의 카운트?
+		// 특정 게시물(게시물의 id) -> 댓글의 -> 카운트 
+		// 2. 쿼리키의 계층화에 맞게 이름을 만드세요. -> 공식 문서
+		// queryKey: ["comments", feed.id, "count"],
+		// 쿼리키 계층화 적용 후 
+		queryKey: ["feeds", feed.id, "comments", "count"],
 		queryFn: () => getCommentsCount(feed.id)
 	});
 
 	const { data: upvotesCount, isLoading: isUpvotesLoading } = useQuery({
-		queryKey: ["upvotes", feed.id, "count"],
+		// 쿼리키 계층화 적용 전 
+		// queryKey: ["upvotes", feed.id, "count"],
+		// 쿼리키 계층화 적용 후 
+		queryKey: ["feeds", feed.id, "upvotes", "count"],
 		queryFn: () => getUpvotesCount(feed.id)
 	})
 
