@@ -3,7 +3,7 @@ import useAuthStore from "../stores/useAuthStore";
 import supabase from "../utils/supabase";
 
 export default function MyPage() {
-	const { user } = useAuthStore();
+	const { user, setUser } = useAuthStore();
 	const [previewImage, setPreviewImage] = useState<string | null>(null);
 	const [profileFile, setProfileFile] = useState<File | null>(null)
 	const [nickname, setNickname] = useState("");
@@ -38,6 +38,10 @@ export default function MyPage() {
 	const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
 		e.preventDefault();
 		try {
+			if (!user) {
+				throw new Error("유저 정보가 없습니다.")
+			}
+
 			setIsUploading(true);
 			const updateData = {
 				nickname,
@@ -62,10 +66,18 @@ export default function MyPage() {
 			}
 
 			// users 테이블에 넣는다. 
-			const { error: userError } = await supabase.from("users").update(updateData).eq("id", user?.id);
+			const { data: userData, error: userError } = await supabase.from("users").update(updateData).eq("id", user?.id).select();
+
 			if (userError) {
 				throw new Error(`유저 정보 업데이트에 실패했습니다. ${userError.message}`)
 			}
+			// user 정보 저장한 곳 === zustand -> 변경 X
+			setUser({
+				...user,
+				nickname: userData[0].nickname,
+				img_url: userData[0].img_url,
+			})
+
 		} catch (error) {
 			alert(`저장에 실패했습니다. ${error}`)
 		} finally {
